@@ -6,17 +6,16 @@ from pathlib import Path
 final_dir_name = str(input('What is the name and volume of the manga you '
                          'are compiling (ex: chainsaw man volume 1): '))
 
-#final_dir_name = final_dir_name.replace(" ", "-")
-
-final_dir_name = "Chainsaw Man Volume " + final_dir_name
+# final_dir_name = final_dir_name.replace(" ", "-")
+# final_dir_name = "Chainsaw Man Volume " + final_dir_name
 
 # get basic download path to access downloaded files
 downloads_path = str(Path.home() / "Downloads")
 
-# make new directory path in downloads from given name and volume - kinda unnecessary
+# make new directory path in downloads from given name and volume
 final_dir_path = os.path.join(downloads_path, final_dir_name)
 
-# makes a new directory from new path
+# makes a new directory from new path - kinda unnecessary
 os.mkdir(final_dir_path)
 
 
