@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import re
 from pathlib import Path
 
 # Goals:
@@ -18,22 +19,29 @@ names_old, names_new = [], []
 def manga_compile(name_and_volume, chap_start, chap_end, download_path):
 
     pic_count = 0
-    given_chapter = str([s for s in download_path.split('-| |.') if s.isdigit()])
+    given_chapter = [str(s) for s in re.split('-| |\.', download_path) if s.isdigit()]
     print(given_chapter)
-    for chapter in range(chap_start, chap_end + 1):
-        chapter_num = str(chapter)
-        iter_dir_path = download_path.replace(given_chapter, chapter_num)
-        print(iter_dir_path)
-        # make a temp directory to unpack files for rename/move & for final zipping
-        with tempfile.TemporaryDirectory() as collect_dir:
+
+    # Collection Directory
+    with tempfile.TemporaryDirectory() as collect_dir:
+        # Chapter iteration
+        for chapter in range(chap_start, chap_end + 1):
+            chapter_num = str(chapter)
+            chapter_switch = os.path.split(download_path)
+            new_chapter = chapter_switch[1].replace(given_chapter[-1], chapter_num)
+            iter_dir_path = os.path.join(chapter_switch[0], new_chapter)
+            print('iter_path ' + iter_dir_path)
+
+            # make a temp directory to unpack files for rename/move
+
             with tempfile.TemporaryDirectory() as rename_dir:
 
                 # unpack files into temp directory
                 shutil.unpack_archive(iter_dir_path, rename_dir)
                 print(os.listdir(rename_dir))
-                for pic in os.listdir(rename_dir):
+                for pic in range(len(os.listdir(rename_dir))):
                     # Get path for pic
-                    old_name = os.path.join(rename_dir, str(pic))
+                    old_name = os.path.join(rename_dir, str(pic) + ".png")
 
                     # Create new path for pic in final directory and changing name to pic count
                     new_name = os.path.join(collect_dir, str(pic_count) + ".png")
@@ -44,10 +52,10 @@ def manga_compile(name_and_volume, chap_start, chap_end, download_path):
 
                     pic_count += 1
 
-                save_path = os.path.dirname(download_path)
-                final_dir_path = os.path.join(save_path, name_and_volume)
-                archive = shutil.make_archive(final_dir_path, 'zip', collect_dir)
-    print(archive)
+        save_path = os.path.dirname(download_path)
+        final_dir_path = os.path.join(save_path, name_and_volume)
+        archive = shutil.make_archive(final_dir_path, 'zip', collect_dir)
+        print(archive)
 
     # convert file type from .zip to .cbz
     base = os.path.splitext(archive)[0]
